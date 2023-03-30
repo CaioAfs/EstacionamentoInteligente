@@ -5,4 +5,8 @@ public class GeradorStatus {
         Random gerador = new Random();
         return gerador.nextInt();
     }
+    public long gerandoValoresAleatoriosData(){
+        Random gerador = new Random();
+        return gerador.nextInt(43200);
+    }
 }

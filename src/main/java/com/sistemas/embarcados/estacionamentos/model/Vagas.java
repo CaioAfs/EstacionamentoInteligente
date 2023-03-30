@@ -2,11 +2,24 @@ package com.sistemas.embarcados.estacionamentos.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+
+import java.time.LocalTime;
+import java.util.Date;
+
 @Entity
 public class Vagas {
     @Id
     private long id;
     private boolean temCarro;
+    private LocalTime tempoEstacionado;
+
+    public LocalTime getTempoEstacionado() {
+        return tempoEstacionado;
+    }
+
+    public void setTempoEstacionado(LocalTime tempoEstacionado) {
+        this.tempoEstacionado = tempoEstacionado;
+    }
 
     public long getId() {
         return id;
