@@ -1,4 +1,4 @@
-package com.sistemas.embarcados.estacionamentos.model;
+package com.sistemas.embarcados.estacionamentos.utils;
 import java.util.Random;
 public class GeradorStatus {
     public boolean gerandoTrueFalse(){

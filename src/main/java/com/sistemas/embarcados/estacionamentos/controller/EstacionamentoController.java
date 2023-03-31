@@ -1,6 +1,7 @@
 package com.sistemas.embarcados.estacionamentos.controller;
 
-import com.sistemas.embarcados.estacionamentos.model.GeradorStatus;
+import com.sistemas.embarcados.estacionamentos.api.EstacionamentoApi;
+import com.sistemas.embarcados.estacionamentos.utils.GeradorStatus;
 import com.sistemas.embarcados.estacionamentos.repository.RepositoryVagas;
 import com.sistemas.embarcados.estacionamentos.model.Vagas;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +17,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping(value = "/api")
-public class EstacionamentoController {
+public class EstacionamentoController implements EstacionamentoApi {
 
     @Autowired
     RepositoryVagas vagasEstacionamento;
 
-    @GetMapping("/vagas")
-    public ResponseEntity<List<Vagas>> getVagasSituacao(){
+    public ResponseEntity<List<Vagas>> getVagasSituacao() {
         List<Vagas> listaVagasEstacionamento = vagasEstacionamento.findAll();
-
         gerandoNovosStatusVagas();
         return new ResponseEntity<List<Vagas>>(listaVagasEstacionamento, HttpStatus.OK);
     }
@@ -33,27 +31,28 @@ public class EstacionamentoController {
     //Metodos proprios
     @Async
     @Transactional
-    public CompletableFuture<Void> gerandoNovosStatusVagas(){
-        GeradorStatus geradorNumeros = new GeradorStatus();
-        List<Vagas> vagasAtualizadas = vagasEstacionamento.findAll();
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+    public CompletableFuture<Void> gerandoNovosStatusVagas() {
+            GeradorStatus geradorNumeros = new GeradorStatus();
+            List<Vagas> vagasAtualizadas = vagasEstacionamento.findAll();
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        for (Vagas atualizaVagas : vagasAtualizadas){
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                boolean statusVaga = (geradorNumeros.gerandoTrueFalse());
-                LocalTime tempo = LocalTime.MIN.plusSeconds(geradorNumeros.gerandoValoresAleatoriosData());
-                atualizaVagas.setTempoEstacionado(tempo);
+            for (Vagas atualizaVagas : vagasAtualizadas) {
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    boolean statusVaga = (geradorNumeros.gerandoTrueFalse());
+                    LocalTime tempo = LocalTime.MIN.plusSeconds(geradorNumeros.gerandoValoresAleatoriosData());
+                    atualizaVagas.setTempoEstacionado(tempo);
 
-                if(statusVaga){
-                    atualizaVagas.setTempoEstacionado(null);
-                }
+                    if (statusVaga) {
+                        atualizaVagas.setTempoEstacionado(null);
+                    }
 
-                atualizaVagas.setTemCarro(statusVaga);
-            });
-            futures.add(future);
+                    atualizaVagas.setTemCarro(statusVaga);
+                });
+                futures.add(future);
+            }
+
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            return allFutures.thenRunAsync(() -> vagasEstacionamento.saveAllAndFlush(vagasAtualizadas));
         }
 
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        return allFutures.thenRunAsync(() -> vagasEstacionamento.saveAllAndFlush(vagasAtualizadas));
-    }
 }
