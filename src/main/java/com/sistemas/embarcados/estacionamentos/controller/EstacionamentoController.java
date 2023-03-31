@@ -40,9 +40,14 @@ public class EstacionamentoController {
 
         for (Vagas atualizaVagas : vagasAtualizadas){
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                boolean statusVaga = (geradorNumeros.gerandoValoresAleatorios() % 2 == 0);
+                boolean statusVaga = (geradorNumeros.gerandoTrueFalse());
                 LocalTime tempo = LocalTime.MIN.plusSeconds(geradorNumeros.gerandoValoresAleatoriosData());
                 atualizaVagas.setTempoEstacionado(tempo);
+
+                if(statusVaga){
+                    atualizaVagas.setTempoEstacionado(null);
+                }
+
                 atualizaVagas.setTemCarro(statusVaga);
             });
             futures.add(future);
